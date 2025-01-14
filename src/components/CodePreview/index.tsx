@@ -1,5 +1,5 @@
 import Highlight, { defaultProps } from "prism-react-renderer";
-import React, { useState, useRef, useEffect, RefObject } from "react";
+import React, { useState, useRef, useEffect, RefObject, useContext } from "react";
 import startCase from "lodash.startcase";
 import {
   mdiCheckboxMarkedCircle,
@@ -38,6 +38,7 @@ import {
   FrameworkTabProps,
 } from "./types";
 import { useTheme } from "../../context/ThemeContext";
+import CookieConsentContext from "../../context/CookieConsentContext";
 
 export interface ToggleLanguageProps {
   handleToggle: (
@@ -277,7 +278,9 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({
 
   const tabSelectCallback = (ev: CustomEvent) => {
     setSelectedTab(ev.detail.tabLabel);
-    localStorage.setItem("selectedTab", ev.detail.tabLabel); 
+    if (isLocalStorageEnabled()) {
+      localStorage.setItem("selectedTab", ev.detail.tabLabel);
+    }
   
     const event = new CustomEvent("tabSelectionChanged", {
       detail: { selectedTab: ev.detail.tabLabel },
@@ -286,9 +289,11 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({
   };
 
   useEffect(() => {
-    const storedTab = localStorage.getItem("selectedTab");
-    if (storedTab) {
-      setSelectedTab(storedTab as "Web component" | "React");
+    if (isLocalStorageEnabled()) {
+      const storedTab = localStorage.getItem("selectedTab");
+      if (storedTab) {
+        setSelectedTab(storedTab as "Web component" | "React");
+      }
     }
 
     const handleTabSelectionChange = (event: CustomEvent) => {
@@ -306,9 +311,11 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({
   }, []);
 
   useEffect(() => {
-    const storedLanguage = localStorage.getItem("selectedLanguage");
-    if (storedLanguage) {
-      setSelectedLanguage(storedLanguage as "Typescript" | "Javascript");
+    if (isLocalStorageEnabled()) {
+      const storedLanguage = localStorage.getItem("selectedLanguage");
+      if (storedLanguage) {
+        setSelectedLanguage(storedLanguage as "Typescript" | "Javascript");
+      }
     }
 
     const handleLanguageSelectionChange = (event: CustomEvent) => {
@@ -511,12 +518,18 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({
       }
     }
 
-    localStorage.setItem("selectedLanguage", intendedLanguage);
+    if (isLocalStorageEnabled()) {
+      localStorage.setItem("selectedLanguage", intendedLanguage);
+    }
     const event = new CustomEvent("languageSelectionChanged", {
       detail: { selectedLanguage: intendedLanguage },
     });
     window.dispatchEvent(event);
   };
+
+  const { localStorageConsent } = useContext(CookieConsentContext);
+
+  const isLocalStorageEnabled = () => localStorageConsent;
 
   return (
     <div className="comp-preview">

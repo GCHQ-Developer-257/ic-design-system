@@ -40,8 +40,19 @@ const deleteDomainCookies = () => {
   }
 };
 
-export const setConsent = (consent: boolean) => {
-  // treat no consent as 'revoked' and delete existing cookies
+const deleteLocalStorage = () => {
+  if (typeof window !== "undefined") {
+    localStorage.clear();
+  }
+};
+
+export const setLocalStorageConsent = (consent: boolean) => {
+  if (!consent) {
+    deleteLocalStorage();
+  }
+};
+
+export const setCookieConsent = (consent: boolean) => {
   if (!consent) {
     deleteDomainCookies();
   }
